@@ -49,8 +49,8 @@ jobs:
           ls -la tests/
           find . -name "*.py"
 
-              - name: Run tests with pytest + coverage
-                run: pytest --cov=. --cov-report=xml --verbose || echo "Pytest failed - see above"
+      - name: Run tests with pytest + coverage
+        run: pytest --cov=. --cov-report=xml --verbose || echo "Pytest failed - see above"
 
       - name: Upload coverage report (artifact)
         uses: actions/upload-artifact@v4
