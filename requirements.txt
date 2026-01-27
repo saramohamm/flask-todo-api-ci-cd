@@ -1,6 +1,3 @@
 flask
 pytest
 uuid  # for uuid in app.py
-flask
-pytest
-uuid  # for uuid in app.py
