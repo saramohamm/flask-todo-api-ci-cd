@@ -1,3 +1,0 @@
-flask
-pytest
-uuid  # for uuid in app.py
