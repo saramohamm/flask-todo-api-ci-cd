@@ -5,6 +5,7 @@ import uuid
 
 app = Flask(__name__)
 
+# In-memory storage (list of task dicts)
 tasks = []
 
 @app.route('/')
@@ -15,7 +16,10 @@ def home():
             "GET /tasks": "List all tasks",
             "POST /tasks": "Create a task",
             "GET /tasks/<task_id>": "Get a task",
-           
+            "PUT /tasks/<task_id>": "Update a task",
+            "DELETE /tasks/<task_id>": "Delete a task",
+            "GET /ping?target=...": "Secure ping",
+            "GET /health": "Health check"
         }
     })
 
@@ -64,6 +68,7 @@ def delete_task(task_id):
 @app.route('/ping')
 def ping():
     target = request.args.get('target', '127.0.0.1')
+    # Secure: no shell, timeout, capture output
     try:
         result = subprocess.run(
             ['ping', '-c', '1', target],
@@ -86,9 +91,11 @@ def handle_error(error):
     response.status_code = error.code
     return response
 
+# VULNERABLE ENDPOINT FOR CI/CD DEMONSTRATION
 @app.route('/lookup')
 def dns_lookup():
     hostname = request.args.get('hostname', '127.0.0.1')
+    # Secure: Use subprocess.run with a list of arguments
     try:
         result = subprocess.run(
             ['nslookup', hostname],
@@ -99,14 +106,6 @@ def dns_lookup():
         return jsonify({"error": "DNS lookup timed out"}), 504
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.after_request
-def add_security_headers(response):
-    response.headers['X-Frame-Options'] = 'DENY'
-    response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['Referrer-Policy'] = 'no-referrer'
-    response.headers['Permissions-Policy'] = 'interest-cohort=()'
-    return response
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=False)
