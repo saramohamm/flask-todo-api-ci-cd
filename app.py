@@ -80,7 +80,7 @@ def ping():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/health')
+
 def health():
     return jsonify({"status": "healthy", "tasks_count": len(tasks)}), 200
 
