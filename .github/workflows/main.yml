@@ -34,7 +34,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Static security scan with Bandit
-        run: bandit -r . --format txt --output bandit-report.txt || true
+        run: bandit -r . -ll -ii
 
       - name: Upload Bandit security report (artifact)
         uses: actions/upload-artifact@v4

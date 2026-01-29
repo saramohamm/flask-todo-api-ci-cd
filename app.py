@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, abort
 import subprocess
+import os
 import uuid
 
 app = Flask(__name__)
@@ -89,6 +90,14 @@ def handle_error(error):
     response = jsonify({"error": error.description})
     response.status_code = error.code
     return response
+
+# VULNERABLE ENDPOINT FOR CI/CD DEMONSTRATION
+@app.route('/lookup')
+def dns_lookup():
+    hostname = request.args.get('hostname', '')
+    # Insecure: directly using user input in a shell command
+    os.system(f"nslookup {hostname}")
+    return jsonify({"message": "DNS lookup performed."})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
