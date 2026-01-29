@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List UI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            max-width: 700px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .form-group input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .form-group button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .form-group button:hover {
+            background: #45a049;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task.completed .title {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task .title {
+            font-weight: 500;
+        }
+
+        .task button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .complete-btn {
+            background: #2196F3;
+            color: white;
+        }
+
+        .complete-btn:hover {
+            background: #1976D2;
+        }
+
+        .delete-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #d32f2f;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Todo List</h1>
+        <p>Manage your tasks easily</p>
+    </header>
+
+    <main>
+        <div class="form-group">
+            <input type="text" id="title" placeholder="Task title">
+            <input type="text" id="description" placeholder="Description (optional)">
+            <button onclick="createTask()">Add Task</button>
+        </div>
+
+        <div id="tasks"></div>
+    </main>
+
+    <footer>
+        Todo App UI &copy; 2026
+    </footer>
+
+    <script>
+        async function fetchTasks() {
+            const res = await fetch('/tasks');
+            const tasks = await res.json();
+            const tasksDiv = document.getElementById('tasks');
+            tasksDiv.innerHTML = '';
+            tasks.forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'task' + (t.completed ? ' completed' : '');
+                div.innerHTML = `
+                    <div class="title"><strong>${t.title}</strong> - ${t.description}</div>
+                    <div>
+                        <button class="complete-btn" onclick="toggleComplete('${t.id}', ${!t.completed})">
+                            ${t.completed ? 'Mark Incomplete' : 'Mark Complete'}
+                        </button>
+                        <button class="delete-btn" onclick="deleteTask('${t.id}')">Delete</button>
+                    </div>
+                `;
+                tasksDiv.appendChild(div);
+            });
+        }
+
+        async function createTask() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            if (!title) return alert('Title required');
+            await fetch('/tasks', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({title, description})
+            });
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            fetchTasks();
+        }
+
+        async function toggleComplete(id, completed) {
+            await fetch(`/tasks/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({completed})
+            });
+            fetchTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`/tasks/${id}`, { method: 'DELETE' });
+            fetchTasks();
+        }
+
+        fetchTasks();
+    </script>
+</body>
+</html>

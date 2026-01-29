@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, render_template
 import subprocess
 import os
 import uuid
@@ -10,18 +10,8 @@ tasks = []
 
 @app.route('/')
 def home():
-    return jsonify({
-        "message": "Welcome to the Todo API!",
-        "endpoints": {
-            "GET /tasks": "List all tasks",
-            "POST /tasks": "Create a task",
-            "GET /tasks/<task_id>": "Get a task",
-            "PUT /tasks/<task_id>": "Update a task",
-            "DELETE /tasks/<task_id>": "Delete a task",
-            "GET /ping?target=...": "Secure ping",
-            "GET /health": "Health check"
-        }
-    })
+    return render_template('index.html')
+
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
@@ -108,4 +98,4 @@ def dns_lookup():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    app.run(host='127.0.0.1', port=5002, debug=False)
