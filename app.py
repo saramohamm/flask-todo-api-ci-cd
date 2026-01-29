@@ -16,7 +16,7 @@ def home():
             "GET /tasks": "List all tasks",
             "POST /tasks": "Create a task",
             "GET /tasks/<task_id>": "Get a task",
-            
+           
         }
     })
 
@@ -106,4 +106,3 @@ def dns_lookup():
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000, debug=False)
-    
