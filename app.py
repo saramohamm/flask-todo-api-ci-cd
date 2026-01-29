@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, abort, render_template
 import subprocess
 import os
+import re
 import uuid
+import sys
 
 app = Flask(__name__)
 
@@ -58,10 +60,19 @@ def delete_task(task_id):
 @app.route('/ping')
 def ping():
     target = request.args.get('target', '127.0.0.1')
-    # Secure: no shell, timeout, capture output
+    # Validate target to prevent command injection
+    if not re.match(r"^[a-zA-Z0-9.-]+$|^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$|^([0-9a-fA-F:]+)$", target):
+        abort(400, description="Invalid target format")
+    # Determine the correct ping argument based on OS
+    ping_command = ['ping']
+    if sys.platform.startswith('win'):
+        ping_command.extend(['-n', '1', target])
+    else:
+        ping_command.extend(['-c', '1', target])
+    
     try:
         result = subprocess.run(
-            ['ping', '-c', '1', target],
+            ping_command,
             capture_output=True, text=True, timeout=5, check=True
         )
         return jsonify({"result": result.stdout.strip()})
@@ -81,21 +92,7 @@ def handle_error(error):
     response.status_code = error.code
     return response
 
-# VULNERABLE ENDPOINT FOR CI/CD DEMONSTRATION
-@app.route('/lookup')
-def dns_lookup():
-    hostname = request.args.get('hostname', '127.0.0.1')
-    # Secure: Use subprocess.run with a list of arguments
-    try:
-        result = subprocess.run(
-            ['nslookup', hostname],
-            capture_output=True, text=True, timeout=5, check=True
-        )
-        return jsonify({"result": result.stdout.strip()})
-    except subprocess.TimeoutExpired:
-        return jsonify({"error": "DNS lookup timed out"}), 504
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5002, debug=False)
