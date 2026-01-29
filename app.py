@@ -94,10 +94,18 @@ def handle_error(error):
 # VULNERABLE ENDPOINT FOR CI/CD DEMONSTRATION
 @app.route('/lookup')
 def dns_lookup():
-    hostname = request.args.get('hostname', '')
-    # Insecure: directly using user input in a shell command
-    os.system(f"nslookup {hostname}")
-    return jsonify({"message": "DNS lookup performed."})
+    hostname = request.args.get('hostname', '127.0.0.1')
+    # Secure: Use subprocess.run with a list of arguments
+    try:
+        result = subprocess.run(
+            ['nslookup', hostname],
+            capture_output=True, text=True, timeout=5, check=True
+        )
+        return jsonify({"result": result.stdout.strip()})
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "DNS lookup timed out"}), 504
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
