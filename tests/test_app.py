@@ -39,7 +39,7 @@ def test_delete_task(client):
 def test_ping_secure(client):
     rv = client.get('/ping?target=127.0.0.1')
     assert rv.status_code == 200
-    assert 'Pinging' in rv.json['result']  # ping output snippet (Windows) or 'PING' (Linux)
+    assert 'PING' in rv.json['result']  # ping output snippet (Windows) or 'PING' (Linux)
 
 def test_health(client):
     rv = client.get('/health')
