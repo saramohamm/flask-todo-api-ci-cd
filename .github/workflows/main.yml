@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   analyze-and-test:
@@ -26,33 +26,29 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 bandit pytest pytest-cov
 
-      - name: Lint with flake8 (code style & basic errors)
+      - name: Lint with flake8
         run: |
-          # stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings (GitHub editor is ~127 chars wide)
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Static security scan with Bandit
         run: bandit -r . -ll -ii
 
-      - name: Upload Bandit security report (artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: bandit-security-report
-          path: bandit-report.txt
-
-      - name: Debug - show directory structure before tests
+      - name: Start Flask application
         run: |
-          pwd
-          ls -la
-          ls -la tests/
-          find . -name "*.py"
+          python app.py &
+          sleep 10
+
+      - name: Dynamic security scan with OWASP ZAP
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'http://127.0.0.1:5000'
+          fail_action: true
 
       - name: Run tests with pytest + coverage
-        run: pytest --cov=. --cov-report=xml --verbose || echo "Pytest failed - see above"
+        run: pytest --cov=. --cov-report=xml --verbose
 
-      - name: Upload coverage report (artifact)
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
