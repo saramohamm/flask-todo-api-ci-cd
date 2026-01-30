@@ -43,7 +43,9 @@ jobs:
         run: echo "Dynamic scan is skipped in CI; please run ZAP locally for dynamic analysis."
 
       - name: Run tests with pytest + coverage
-        run: pytest --cov=. --cov-report=xml --verbose
+        run: |
+          export PYTHONPATH=$PYTHONPATH:.
+          pytest --cov=. --cov-report=xml --verbose
 
       - name: Upload Bandit security report
         uses: actions/upload-artifact@v4
