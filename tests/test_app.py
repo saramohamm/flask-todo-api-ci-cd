@@ -39,9 +39,14 @@ def test_delete_task(client):
 def test_ping_secure(client):
     rv = client.get('/ping?target=127.0.0.1')
     assert rv.status_code == 200
-    assert 'PING' in rv.json['result']  # ping output snippet
+    assert 'Pinging' in rv.json['result']  # ping output snippet (Windows) or 'PING' (Linux)
 
 def test_health(client):
     rv = client.get('/health')
     assert rv.status_code == 200
     assert rv.json['status'] == 'healthy'
+
+def test_ping_invalid_target(client):
+    rv = client.get('/ping?target=;evilcommand')
+    assert rv.status_code == 400
+    assert 'Invalid target format' in rv.json['error']
