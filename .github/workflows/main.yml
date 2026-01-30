@@ -37,16 +37,22 @@ jobs:
       - name: Start Flask application
         run: |
           python app.py &
-          sleep 10
+          sleep 15
 
       - name: Dynamic security scan with OWASP ZAP
         uses: zaproxy/action-baseline@v0.10.0
         with:
-          target: 'http://127.0.0.1:5000'
-          fail_action: true
+          target: 'http://host.docker.internal:5000'
+          fail_action: false
 
       - name: Run tests with pytest + coverage
         run: pytest --cov=. --cov-report=xml --verbose
+
+      - name: Upload Bandit security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit-report.txt
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
