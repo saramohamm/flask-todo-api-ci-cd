@@ -10,7 +10,7 @@ def client():
 def test_home(client):
     rv = client.get('/')
     assert rv.status_code == 200
-    assert b"Welcome to the Todo API" in rv.data
+    assert b"My Todo List" in rv.data
 
 def test_create_and_get_task(client):
     rv = client.post('/tasks', json={'title': 'Test task', 'description': 'Details'})
